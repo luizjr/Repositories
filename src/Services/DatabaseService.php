@@ -291,6 +291,10 @@ class DatabaseService implements ServiceInterface
         $aliases = [];
 
         foreach ($query->getQuery()->columns as $column) {
+            if ($column instanceof \Illuminate\Database\Query\Expression) {
+                $column = $column->getValue($query->getQuery()->getGrammar());
+            }
+
             if (preg_match("~AS (\w+)~i", $column, $matches)) {
                 $aliases[$query->getModel()->getTable() . '.' . $matches[1]]
                     = \DB::raw(str_replace($matches[0], '', $column));

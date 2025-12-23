@@ -58,7 +58,7 @@ trait Sortable
 
         foreach ($relations as $relation) {
             /* @var Relation $relationClass */
-            $this->joinRelation($relationClass = $model->{camel_case($relation)}());
+            $this->joinRelation($relationClass = $model->{\Illuminate\Support\Str::camel($relation)}());
 
             $model = $relationClass->getRelated();
         }
@@ -137,9 +137,9 @@ trait Sortable
     {
         return $this->instance->join(
             $relation->getRelated()->getTable(),
-            $relation->getQualifiedOtherKeyName(),
+            $relation->getQualifiedOwnerKeyName(),
             '=',
-            $relation->getQualifiedForeignKey()
+            $relation->getQualifiedForeignKeyName()
         );
     }
 

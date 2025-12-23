@@ -47,7 +47,7 @@ trait Filterable
         $column    = $this->getColumn($column = array_pop($relations), $relations);
 
         $relations = array_map(function ($relation) {
-            return camel_case($relation);
+            return \Illuminate\Support\Str::camel($relation);
         }, $relations);
 
         $this->instance->whereHas(implode('.', $relations), function (Builder $builder) use ($column, $value) {
@@ -80,8 +80,8 @@ trait Filterable
 
         foreach ($relations as $relation) {
             $model = $model instanceof Model
-                ? $model->{camel_case($relation)}()
-                : $model->getRelated()->{camel_case($relation)}();
+                ? $model->{\Illuminate\Support\Str::camel($relation)}()
+                : $model->getRelated()->{\Illuminate\Support\Str::camel($relation)}();
         }
 
         return "{$model->getRelated()->getTable()}.{$column}";

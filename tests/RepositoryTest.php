@@ -5,6 +5,7 @@ namespace SebastianBerc\Repositories\Test;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use PHPUnit\Framework\Attributes\Test;
 use SebastianBerc\Repositories\Exceptions\InvalidRepositoryModel;
 use SebastianBerc\Repositories\Repository;
 
@@ -25,20 +26,20 @@ class RepositoryTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         $this->repository = new RepositoryStub($this->app);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnRepositoryInstance()
     {
         $this->assertEquals(RepositoryStub::class, get_class(RepositoryStub::instance()));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnAllRecordsFromDatabase()
     {
         $this->factory()->times(5)->create(ModelStub::class);
@@ -47,7 +48,7 @@ class RepositoryTest extends TestCase
         $this->assertEquals(5, $this->repository->all()->count());
     }
 
-    /** @test */
+    #[Test]
     public function isShouldPaginateRecordsFromDatabase()
     {
         $this->factory()->times(50)->create(ModelStub::class);
@@ -59,7 +60,7 @@ class RepositoryTest extends TestCase
         $this->assertEquals(5, $this->repository->paginate(10)->lastPage());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnSpecifiedRecordFromDatabase()
     {
         $model  = $this->factory()->create(ModelStub::class);
@@ -67,12 +68,12 @@ class RepositoryTest extends TestCase
 
         $this->assertInstanceOf(ModelStub::class, $finded);
         $this->assertEquals(
-            array_only($finded->toArray(), ['email', 'password']),
-            array_only($model->toArray(), ['email', 'password'])
+            \Illuminate\Support\Arr::only($finded->toArray(), ['email', 'password']),
+            \Illuminate\Support\Arr::only($model->toArray(), ['email', 'password'])
         );
     }
 
-    /** @test */
+    #[Test]
     public function itShouldCreateNewRecordInDatabase()
     {
         $created = $this->repository->create(['email' => $this->fake()->email, 'password' => 'secret']);
@@ -82,12 +83,12 @@ class RepositoryTest extends TestCase
         $finded = $this->repository->find($created->getKey());
 
         $this->assertEquals(
-            array_only($finded->toArray(), ['email', 'password']),
-            array_only($created->toArray(), ['email', 'password'])
+            \Illuminate\Support\Arr::only($finded->toArray(), ['email', 'password']),
+            \Illuminate\Support\Arr::only($created->toArray(), ['email', 'password'])
         );
     }
 
-    /** @test */
+    #[Test]
     public function itShouldUpdateSpecifiedRecordInDatabase()
     {
         $model = $this->factory()->create(ModelStub::class);
@@ -97,7 +98,7 @@ class RepositoryTest extends TestCase
         $this->assertEquals('terces', $this->repository->find($model->getKey())->password);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldDeleteSpecifiedRecordFromDatabase()
     {
         $model = $this->factory()->create(ModelStub::class);
@@ -107,7 +108,7 @@ class RepositoryTest extends TestCase
         $this->assertNull($this->repository->find($model->getKey()));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordByHisField()
     {
         $this->factory()->times(15)->create(ModelStub::class);
@@ -117,12 +118,12 @@ class RepositoryTest extends TestCase
 
         $this->assertInstanceOf(ModelStub::class, $finded);
         $this->assertEquals(
-            array_only($finded->toArray(), ['email', 'password']),
-            array_only($model->toArray(), ['email', 'password'])
+            \Illuminate\Support\Arr::only($finded->toArray(), ['email', 'password']),
+            \Illuminate\Support\Arr::only($model->toArray(), ['email', 'password'])
         );
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordWhereGivenFieldsAreMatch()
     {
         $this->factory()->times(15)->create(ModelStub::class);
@@ -132,12 +133,12 @@ class RepositoryTest extends TestCase
 
         $this->assertInstanceOf(ModelStub::class, $finded);
         $this->assertEquals(
-            array_only($finded->toArray(), ['email', 'password']),
-            array_only($model->toArray(), ['email', 'password'])
+            \Illuminate\Support\Arr::only($finded->toArray(), ['email', 'password']),
+            \Illuminate\Support\Arr::only($model->toArray(), ['email', 'password'])
         );
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordsWhereGivenFieldsAreMatch()
     {
         $this->factory()->times(17)->create(ModelStub::class);
@@ -149,7 +150,7 @@ class RepositoryTest extends TestCase
         $this->assertEquals(17, $finded->count());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnTotalCountOfRecordsInDatabase()
     {
         $this->factory()->times(21)->create(ModelStub::class);
@@ -157,13 +158,13 @@ class RepositoryTest extends TestCase
         $this->assertEquals(21, $this->repository->count());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldCallMethodOnModel()
     {
         $this->assertEquals('users', $this->repository->getTable());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldRetrieveModelWithRelation()
     {
         $models = $this->factory()->times(2)->create(RelatedModelStub::class);
@@ -195,7 +196,7 @@ class RepositoryTest extends TestCase
         $this->assertEquals($models->first()->user->attributesToArray(), $model->attributesToArray());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldRetrieveModelWithMoreThenOneRelation()
     {
         $models = $this->factory()->times(1)->create(RelatedModelStub::class);
@@ -206,56 +207,19 @@ class RepositoryTest extends TestCase
         $this->assertEquals($models->first()->attributesToArray(), $model->otherToken->attributesToArray());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowAnExceptionWhenBadObjectIsGiven()
     {
-        $this->setExpectedException(InvalidRepositoryModel::class);
+        $this->expectException(InvalidRepositoryModel::class);
 
         (new BadRepositoryStub($this->app))->find(1);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowExceptionWhenCallingBadMethod()
     {
-        $this->setExpectedException(\BadMethodCallException::class);
+        $this->expectException(\BadMethodCallException::class);
         $this->repository->veryBadMethod();
-    }
-}
-
-class RepositoryStub extends Repository
-{
-    public function takeModel()
-    {
-        return ModelStub::class;
-    }
-}
-
-class ModelStub extends Model
-{
-    protected $fillable = ['email', 'password'];
-
-    protected $table = 'users';
-
-    public function token()
-    {
-        return $this->hasOne(RelatedModelStub::class, 'id');
-    }
-
-    public function otherToken()
-    {
-        return $this->hasOne(RelatedModelStub::class, 'id');
-    }
-}
-
-class RelatedModelStub extends Model
-{
-    protected $fillable = ['user_id', 'token'];
-
-    protected $table = 'password_resets';
-
-    public function user()
-    {
-        return $this->belongsTo(ModelStub::class);
     }
 }
 

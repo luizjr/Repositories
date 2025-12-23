@@ -3,7 +3,8 @@
 namespace SebastianBerc\Repositories\Test;
 
 use Faker\Factory as Faker;
-use Laracasts\TestDummy\Factory as TestDummy;
+
+require_once __DIR__ . '/Stubs.php';
 
 /**
  * Class TestCase
@@ -19,7 +20,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -29,7 +30,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     /**
      * Clean up the testing environment before the next test.
      */
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
     }
@@ -39,17 +40,17 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     public function fake()
     {
-        return (new Faker())->create();
+        return Faker::create();
     }
 
     /**
-     * Return the new TestDummy instance.
+     * Return the new TestFactory instance.
      *
-     * @return TestDummy
+     * @return TestFactory
      */
     public function factory()
     {
-        return new TestDummy();
+        return new TestFactory();
     }
 
     /**

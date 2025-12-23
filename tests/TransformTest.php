@@ -1,6 +1,7 @@
 <?php
 
 namespace SebastianBerc\Repositories\Test;
+use PHPUnit\Framework\Attributes\Test;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
@@ -27,20 +28,20 @@ class TransformTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         $this->repository = new RepositoryTransformStub($this->app);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnRepositoryInstance()
     {
         $this->assertEquals(RepositoryTransformStub::class, get_class(RepositoryTransformStub::instance()));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnAllRecordsFromDatabase()
     {
         $this->factory()->times(5)->create(ModelTransformStub::class);
@@ -50,7 +51,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $this->repository->all()->first()->password);
     }
 
-    /** @test */
+    #[Test]
     public function isShouldPaginateRecordsFromDatabase()
     {
         $this->factory()->times(50)->create(ModelTransformStub::class);
@@ -65,7 +66,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $paginator->items()[0]['password']);
     }
 
-    /** @test */
+    #[Test]
     public function isShouldFetchFirstCollectionPageFilteredByRelationFieldFromDatabase()
     {
         $this->factory()->times(50)->create(ModelTransformStub::class);
@@ -78,7 +79,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $paginator->items()[0]['password']);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnSimplePaginatedRecordsInDatabaseAsCollection()
     {
         $this->factory()->times(15)->create(ModelTransformStub::class);
@@ -92,7 +93,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $collection->first()->password);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnSpecifiedRecordFromDatabase()
     {
         $model  = $this->factory()->create(ModelTransformStub::class);
@@ -102,7 +103,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $finded->password);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldCreateNewRecordInDatabase()
     {
         $created = $this->repository->create(['email' => $this->fake()->email, 'password' => 'secret']);
@@ -111,7 +112,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $created->password);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldUpdateSpecifiedRecordInDatabase()
     {
         $model   = $this->factory()->create(ModelTransformStub::class);
@@ -120,7 +121,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $updated->password);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldDeleteSpecifiedRecordFromDatabase()
     {
         $model = $this->factory()->create(ModelTransformStub::class);
@@ -130,7 +131,7 @@ class TransformTest extends TestCase
         $this->assertNull($this->repository->find($model->getKey()));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordByHisField()
     {
         $this->factory()->times(15)->create(ModelTransformStub::class);
@@ -143,7 +144,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $finded->password);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordWhereGivenFieldsAreMatch()
     {
         $this->factory()->times(15)->create(ModelTransformStub::class);
@@ -156,7 +157,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $finded->password);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordsWhereGivenFieldsAreMatch()
     {
         $this->factory()->times(17)->create(ModelTransformStub::class);
@@ -169,7 +170,7 @@ class TransformTest extends TestCase
         $this->assertEquals('*****', $finded->first()->password);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnTotalCountOfRecordsInDatabase()
     {
         $this->factory()->times(21)->create(ModelTransformStub::class);
@@ -177,7 +178,7 @@ class TransformTest extends TestCase
         $this->assertEquals(21, $this->repository->count());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldTransforRepositoryResults()
     {
         $this->factory()->create(ModelTransformStub::class);
@@ -188,42 +189,42 @@ class TransformTest extends TestCase
         $this->assertEquals('example@example.com', $finded->email);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldCallMethodOnModel()
     {
         $this->assertEquals('users', $this->repository->getTable());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowAnExceptionWhenBadObjectIsGiven()
     {
-        $this->setExpectedException(InvalidRepositoryModel::class);
+        $this->expectException(InvalidRepositoryModel::class);
 
         (new BadRepositoryTransformStub($this->app))->find(1);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowAnExceptionWhenBadTransformerIsDeclared()
     {
         $this->factory()->create(ModelTransformStub::class);
         $repository = new RepositoryWithBadTransformStub($this->app);
 
-        $this->setExpectedException(InvalidTransformer::class);
+        $this->expectException(InvalidTransformer::class);
         $repository->find(1);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowAnExceptionWhenBadTransformerIsGiven()
     {
-        $this->setExpectedException(InvalidTransformer::class);
+        $this->expectException(InvalidTransformer::class);
 
         $this->repository->setTransformer(ModelTransformStub::class);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowExceptionWhenCallingBadMethod()
     {
-        $this->setExpectedException(\BadMethodCallException::class);
+        $this->expectException(\BadMethodCallException::class);
         $this->repository->veryBadMethod();
     }
 }

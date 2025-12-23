@@ -2,6 +2,8 @@
 
 namespace SebastianBerc\Repositories\Test;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -30,7 +32,7 @@ class GridTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -38,13 +40,13 @@ class GridTest extends TestCase
         $this->otherRepository = new OtherGridRepositoryStub($this->app);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnRepositoryInstance()
     {
         $this->assertEquals(GridRepositoryStub::class, get_class(GridRepositoryStub::instance()));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFetchFirstCollectionPageFromDatabase()
     {
         $this->factory()->times(20)->create(User::class);
@@ -55,7 +57,7 @@ class GridTest extends TestCase
         $this->assertEquals(5, sizeof($paginator->items()));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFetchFirstCollectionPageSortedDescendingByIdsFromDatabase()
     {
         $this->factory()->times(20)->create(User::class);
@@ -68,7 +70,7 @@ class GridTest extends TestCase
         $this->assertEquals(16, last($paginator->items())->getKey());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFetchFirstCollectionPageSortedDescendingByRelationFieldFromDatabase()
     {
         $this->factory()->times(3)->create(PasswordReset::class);
@@ -89,7 +91,7 @@ class GridTest extends TestCase
         $this->assertEquals(4, last($paginator->items())->getKey());
     }
 
-    /** @test */
+    #[Test]
     public function isShouldFetchFirstCollectionPageFilteredByFieldFromDatabase()
     {
         $this->factory()->times(20)->create(User::class);
@@ -102,7 +104,7 @@ class GridTest extends TestCase
         $this->assertEquals(5, $paginator->total());
     }
 
-    /** @test */
+    #[Test]
     public function isShouldFetchFirstCollectionPageFilteredByRelationFieldFromDatabase()
     {
         $this->factory()->times(20)->create(PasswordReset::class);
@@ -115,7 +117,7 @@ class GridTest extends TestCase
         $this->assertEquals(5, $paginator->total());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnSimplePaginatedRecordsInDatabaseAsCollection()
     {
         $this->factory()->times(15)->create(User::class);
@@ -128,18 +130,18 @@ class GridTest extends TestCase
         $this->assertEquals(5, $collection->last()->getKey());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowAnExceptionWhenBadObjectIsGiven()
     {
-        $this->setExpectedException(InvalidRepositoryModel::class);
+        $this->expectException(InvalidRepositoryModel::class);
 
         (new BadRepositoryStub($this->app))->find(1);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowExceptionWhenCallingBadMethod()
     {
-        $this->setExpectedException(\BadMethodCallException::class);
+        $this->expectException(\BadMethodCallException::class);
         $this->repository->veryBadMethod();
     }
 }
@@ -157,34 +159,6 @@ class OtherGridRepositoryStub extends Repository
     public function takeModel()
     {
         return PasswordReset::class;
-    }
-}
-
-class User extends Model
-{
-    protected $fillable = ['email', 'password'];
-
-    protected $table = 'users';
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
-    public function password()
-    {
-        return $this->hasOne(PasswordReset::class, 'id');
-    }
-}
-
-class PasswordReset extends Model
-{
-    protected $fillable = ['user_id', 'token'];
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
     }
 }
 

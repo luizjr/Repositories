@@ -2,6 +2,8 @@
 
 namespace SebastianBerc\Repositories\Test;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -31,7 +33,7 @@ class CacheRepositoryTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -39,88 +41,88 @@ class CacheRepositoryTest extends TestCase
         $this->repository = new CacheRepositoryStub($this->app);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnRepositoryInstance()
     {
         $this->assertEquals(CacheRepositoryStub::class, get_class(CacheRepositoryStub::instance()));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnAllRecordsFromCache()
     {
-        $this->factory()->times(5)->create(CacheModelStub::class);
+        $this->factory()->times(5)->create(ModelStub::class);
         $collection = $this->repository->all();
 
         $this->assertInstanceOf(Collection::class, $collection);
         $this->assertEquals($this->repository->all(), $collection);
     }
 
-    /** @test */
+    #[Test]
     public function isShouldPaginateRecordsFromCache()
     {
-        $this->factory()->times(50)->create(CacheModelStub::class);
+        $this->factory()->times(50)->create(ModelStub::class);
         $paginator = $this->repository->paginate(10);
 
         $this->assertInstanceOf(LengthAwarePaginator::class, $paginator);
         $this->assertEquals($this->repository->paginate(10), $paginator);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldReturnSpecifiedRecordFromCache()
     {
-        $model = $this->factory()->create(CacheModelStub::class);
+        $model = $this->factory()->create(ModelStub::class);
 
-        $this->assertInstanceOf(CacheModelStub::class, $model);
-        $this->assertEquals($this->repository->find($model->getKey()), $model);
+        $this->assertInstanceOf(ModelStub::class, $model);
+        $this->assertEquals($model->toArray(), $this->repository->find($model->getKey())->toArray());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldCreateNewRecordInCache()
     {
         $model = $this->repository->create([
             'email'          => $this->fake()->email,
             'password'       => 'secret',
-            'remember_token' => md5(str_random())
+            'remember_token' => md5(\Illuminate\Support\Str::random())
         ]);
 
-        $this->assertEquals($this->repository->find($model->getKey()), $model);
+        $this->assertEquals($model->toArray(), $this->repository->find($model->getKey())->toArray());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldUpdateSpecifiedRecordInCache()
     {
-        $model   = $this->factory()->create(CacheModelStub::class);
+        $model   = $this->factory()->create(ModelStub::class);
         $updated = $this->repository->update($model->getKey(), ['password' => 'terces']);
 
-        $this->assertEquals($this->repository->find($model->getKey()), $updated);
+        $this->assertEquals($updated->toArray(), $this->repository->find($model->getKey())->toArray());
     }
 
-    /** @test */
+    #[Test]
     public function itShouldDeleteSpecifiedRecordFromCache()
     {
-        $model = $this->factory()->create(CacheModelStub::class);
+        $model = $this->factory()->create(ModelStub::class);
 
         $this->repository->delete($model->getKey());
 
         $this->assertNull($this->repository->find($model->getKey()));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordByHisField()
     {
-        $this->factory()->times(15)->create(CacheModelStub::class);
-        $model = $this->factory()->create(CacheModelStub::class);
+        $this->factory()->times(15)->create(ModelStub::class);
+        $model = $this->factory()->create(ModelStub::class);
 
         $finded = $this->repository->findBy('email', $model->email);
 
         $this->assertEquals($this->repository->findBy('email', $model->email), $finded);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordWhereGivenFieldsAreMatch()
     {
-        $this->factory()->times(15)->create(CacheModelStub::class);
-        $model = $this->factory()->create(CacheModelStub::class);
+        $this->factory()->times(15)->create(ModelStub::class);
+        $model = $this->factory()->create(ModelStub::class);
         $this->repository->findWhere($wheres = ['email' => $model->email, 'password' => 'secret']);
 
         $finded = $this->repository->findWhere($wheres);
@@ -128,53 +130,38 @@ class CacheRepositoryTest extends TestCase
         $this->assertEquals($finded, $this->repository->findWhere($wheres));
     }
 
-    /** @test */
+    #[Test]
     public function itShouldFindRecordsWhereGivenFieldsAreMatch()
     {
-        $this->factory()->times(17)->create(CacheModelStub::class);
+        $this->factory()->times(17)->create(ModelStub::class);
 
         $finded = $this->repository->where('password', 'secret');
 
         $this->assertEquals($this->repository->where('password', 'secret'), $finded);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowAnExceptionWhenBadObjectIsGiven()
     {
-        $this->setExpectedException(InvalidRepositoryModel::class);
+        $this->expectException(InvalidRepositoryModel::class);
 
         (new BadCacheRepositoryStub($this->app))->find(1);
     }
 
-    /** @test */
+    #[Test]
     public function itShouldThrowExceptionWhenCallingBadMethod()
     {
-        $this->setExpectedException(\BadMethodCallException::class);
+        $this->expectException(\BadMethodCallException::class);
 
         $this->repository->veryBadMethod();
     }
-}
-
-class CacheRepositoryStub extends Repository implements ShouldCache
-{
-    public function takeModel()
-    {
-        return CacheModelStub::class;
-    }
-}
-
-class CacheModelStub extends Model
-{
-    protected $fillable = ['email', 'password', 'remember_token'];
-
-    protected $table = 'users';
 }
 
 class BadCacheRepositoryStub extends Repository implements ShouldCache
 {
     public function takeModel()
     {
-        return BadCacheModelStub::class;
+        return BadModelStub::class;
     }
 }
 
